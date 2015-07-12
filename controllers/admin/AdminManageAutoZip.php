@@ -26,11 +26,9 @@
  */
 require_once _PS_MODULE_DIR_.'autozip/classes/AutoZipConfig.php';
 
-class AdminManageAutoZipController extends ModuleAdminController
-{
+class AdminManageAutoZipController extends ModuleAdminController {
 
-	public function __construct()
-	{
+	public function __construct() {
 		$this->bootstrap = true;
 		$this->table = 'autozip';
 		$this->explicitSelect = true;
@@ -85,31 +83,28 @@ class AdminManageAutoZipController extends ModuleAdminController
 				'title' => $this->module->l('Source Type'),
 				'align' => 'left',
 				'width' => 25
-			),
+			)
 		);
 	}
 
-	public function postProcess()
-	{
-		if ($this->action)
-		{
+	public function postProcess() {
+		if ($this->action) {
 
 			if (!$this->tabAccess['add'] === '1')
 				$this->errors[] = Tools::displayError('You do not have write access.');
 
-			if (Tools::getIsset('id_attachment') && Tools::getIsset('id_product_download') && 
+			if (Tools::getIsset('id_attachment') && Tools::getIsset('id_product_download') &&
 					(int)Tools::getValue('id_attachment') && (int)Tools::getValue('id_product_download'))
 				$this->errors[] = Tools::displayError('You can not choose an attachment and a download at the same time.');
 
-			if (Tools::getIsset('id_attachment') && Tools::getIsset('id_product_download') && 
+			if (Tools::getIsset('id_attachment') && Tools::getIsset('id_product_download') &&
 					!(int)Tools::getValue('id_attachment') && !(int)Tools::getValue('id_product_download'))
 				$this->errors[] = Tools::displayError('You have to choose an attachment OR a download.');
 		}
 		parent::postProcess();
 	}
 
-	public function renderForm()
-	{
+	public function renderForm() {
 
 		$attachement_list = Db::getInstance()->ExecuteS('SELECT id_attachment, file_name '
 				.'FROM `'._DB_PREFIX_.'attachment` '
@@ -122,8 +117,7 @@ class AdminManageAutoZipController extends ModuleAdminController
 						'WHERE id_product_download NOT IN (SELECT id_product_download FROM `'._DB_PREFIX_.$this->table.'`)' : ''));
 
 		// No option available
-		if (!count($attachement_list) && !count($download_list))
-		{
+		if (!count($attachement_list) && !count($download_list)) {
 			$this->errors[] = Tools::displayError('No attachment or download available (or all already assigned).');
 			$this->fields_form = array(
 				'submit' => array(
@@ -190,6 +184,8 @@ class AdminManageAutoZipController extends ModuleAdminController
 					'type' => 'radio',
 					'label' => $this->l('Source Type :'),
 					'name' => 'source_type',
+					'required' => true,
+					'desc' => $this->l('Type of the data source / repository'),
 					'values' => array(
 						array(
 							'id' => 'gitssh',
@@ -202,9 +198,19 @@ class AdminManageAutoZipController extends ModuleAdminController
 							'label' => 'GIT (HTTP)'
 						),
 						array(
+							'id' => 'githttps',
+							'value' => 'githttps',
+							'label' => 'GIT (HTTPS)'
+						),
+						array(
 							'id' => 'svnhttp',
 							'value' => 'svnhttp',
 							'label' => 'SVN (HTTP)'
+						),
+						array(
+							'id' => 'svnhttps',
+							'value' => 'svnhttps',
+							'label' => 'SVN (HTTPS)'
 						),
 						array(
 							'id' => 'ftp',
@@ -214,11 +220,14 @@ class AdminManageAutoZipController extends ModuleAdminController
 						array(
 							'id' => 'http',
 							'value' => 'http',
-							'label' => 'HTTP(S)'
+							'label' => 'HTTP'
 						),
-					),
-					'required' => true,
-					'desc' => $this->l('Type of the data source / repository')
+						array(
+							'id' => 'https',
+							'value' => 'https',
+							'label' => 'HTTPS'
+						),
+					)
 				),
 				array(
 					'type' => 'text',
@@ -238,12 +247,20 @@ class AdminManageAutoZipController extends ModuleAdminController
 					'required' => false,
 					'desc' => $this->l('Password to connect to the source')
 				),
+				array(
+					'type' => 'text',
+					'label' => $this->l('Zip Folder :'),
+					'name' => 'zip_folder',
+					'size' => 64,
+					'maxlength' => 255,
+					'required' => false,
+					'desc' => $this->l('Root folder name to have inside the zip (keep empty do disable root folder)')
+				),
 			),
 			'submit' => array(
 				'title' => $this->l('Save'),
 			)
 		);
-
 
 		return parent::renderForm();
 	}

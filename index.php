@@ -1,7 +1,5 @@
 <?php
 /**
-* 2007-2015 Antonio Rossetti
-*
 * NOTICE OF LICENSE
 *
 * This source file is subject to the Academic Free License (AFL 3.0)

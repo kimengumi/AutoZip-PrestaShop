@@ -33,6 +33,7 @@ class AutoZipConfig extends ObjectModel {
 	public $source_type;
 	public $source_login;
 	public $source_password;
+	public $zip_folder;
 	public static $definition = array(
 		'table' => 'autozip',
 		'primary' => 'id_autozip',
@@ -66,6 +67,10 @@ class AutoZipConfig extends ObjectModel {
 				'required' => false
 			),
 			'source_password' => array(
+				'type' => ObjectModel :: TYPE_STRING,
+				'required' => false
+			),
+			'zip_folder' => array(
 				'type' => ObjectModel :: TYPE_STRING,
 				'required' => false
 			)
@@ -109,7 +114,7 @@ class AutoZipConfig extends ObjectModel {
 	public function update($nullValues = false) {
 
 		//keep old password if no new provided
-		if (!$this->source_password) {
+		if (!$this->source_password && $this->source_login) {
 			$old = new self($this->id_autozip);
 			$this->source_password = $old->source_password;
 		}

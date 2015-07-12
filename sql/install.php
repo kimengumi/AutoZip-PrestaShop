@@ -1,7 +1,5 @@
 <?php
 /**
-* 2007-2015 Antonio Rossetti
-*
 * NOTICE OF LICENSE
 *
 * This source file is subject to the Academic Free License (AFL 3.0)
@@ -31,10 +29,11 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'autozip` (
   `id_attachment` int(10) NOT NULL,
   `id_product_download` int(10) NOT NULL,
   `source_url` varchar(255) NOT NULL,
-  `source_folder` varchar(255) NOT NULL,
+  `source_folder` varchar(255) DEFAULT NULL,
   `source_type` varchar(32) NOT NULL,
-  `source_login` varchar(128) NOT NULL,
-  `source_password` varchar(128) NOT NULL,
+  `source_login` varchar(128) DEFAULT NULL,
+  `source_password` varchar(128) DEFAULT NULL,
+  `zip_folder` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id_autozip`),
   UNIQUE KEY `id_attachment` (`id_attachment`,`id_product_download`)
 ) ENGINE='._MYSQL_ENGINE_.'  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2';
