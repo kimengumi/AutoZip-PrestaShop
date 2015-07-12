@@ -1,29 +1,30 @@
 <?php
 
 /**
- * ---------------------------------------------------------------------------------
- *
- * 1997-2013 Quadra Informatique
- *
  * NOTICE OF LICENSE
  *
- * This source file is subject to the Open Software License (OSL 3.0)
- * that is available through the world-wide-web at this URL:
- * http://opensource.org/licenses/osl-3.0.php
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to ecommerce@quadra-informatique.fr so we can send you a copy immediately.
+ * to license@prestashop.com so we can send you a copy immediately.
  *
- * @author Quadra Informatique <ecommerce@quadra-informatique.fr>
- * @copyright 1997-2013 Quadra Informatique
- * @version Release: $Revision: 1.0 $
- * @license http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * DISCLAIMER
  *
- * ---------------------------------------------------------------------------------
+ * Do not edit or add to this file if you wish to upgrade Antonio Rossetti to newer
+ * versions in the future. If you wish to customize Antonio Rossetti for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    Antonio Rossetti <arossetti@users.noreply.github.com>
+ *  @copyright Antonio Rossetti
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  
  */
-class AutoZipConfig extends ObjectModel
-{
+class AutoZipConfig extends ObjectModel {
 
+	protected $cipher;
 	public $id_autozip;
 	public $id_attachment;
 	public $id_product_download;
@@ -70,5 +71,73 @@ class AutoZipConfig extends ObjectModel
 			)
 		)
 	);
+
+	/**
+	 * Builds the object
+	 *
+	 * @param int|null $id      If specified, loads and existing object from DB (optional).
+	 * @param int|null $id_lang Required if object is multilingual (optional).
+	 * @param int|null $id_shop ID shop for objects with multishop tables.
+	 *
+	 * @throws PrestaShopDatabaseException
+	 * @throws PrestaShopException
+	 */
+	public function __construct($id = null, $id_lang = null, $id_shop = null) {
+
+		if (defined('_RIJNDAEL_KEY_') && defined('_RIJNDAEL_IV_'))
+			$this->cipher = new Rijndael(_RIJNDAEL_KEY_, _RIJNDAEL_IV_);
+		else if (defined('_COOKIE_KEY_') && defined('_COOKIE_IV_'))
+			$this->cipher = new Blowfish(_COOKIE_KEY_, _COOKIE_IV_);
+		else
+			throw new PrestaShopException('AutoZip : No Encryption method available');
+		
+		parent::__construct($id, $id_lang, $id_shop);
+
+		if ($this->source_password)
+			$this->source_password = $this->cipher->decrypt($this->source_password);
+	}
+
+	/**
+	 * Updates the current object in the database
+	 *
+	 * @param bool $null_values
+	 *
+	 * @return bool
+	 * @throws PrestaShopDatabaseException
+	 * @throws PrestaShopException
+	 */
+	public function update($nullValues = false) {
+
+		//keep old password if no new provided
+		if (!$this->source_password) {
+			$old = new self($this->id_autozip);
+			$this->source_password = $old->source_password;
+		}
+
+		//encrypt Passowrd
+		if ($this->source_password)
+			$this->source_password = $this->cipher->encrypt($this->source_password);
+
+		return parent::update($nullValues);
+	}
+
+	/**
+	 * Adds current object to the database
+	 *
+	 * @param bool $auto_date
+	 * @param bool $null_values
+	 *
+	 * @return bool Insertion result
+	 * @throws PrestaShopDatabaseException
+	 * @throws PrestaShopException
+	 */
+	public function add($autodate = true, $null_values = true) {
+
+		//encrypt Passowrd
+		if ($this->source_password)
+			$this->source_password = $this->cipher->encrypt($this->source_password);
+
+		return parent::add($autodate, $null_values);
+	}
 
 }
