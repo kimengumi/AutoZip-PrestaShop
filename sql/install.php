@@ -26,7 +26,7 @@
 
 $sql = array();
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'_autozip` (
+$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'autozip` (
   `id_autozip` int(11) NOT NULL AUTO_INCREMENT,
   `id_attachment` int(10) NOT NULL,
   `id_product_download` int(10) NOT NULL,
