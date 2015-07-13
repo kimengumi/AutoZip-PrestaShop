@@ -25,62 +25,59 @@
  *  
  */
 if (!defined('_PS_VERSION_'))
-	exit;
+    exit;
 
-class Autozip extends Module
-{
-	public function __construct()
-	{
-		$this->name = 'autozip';
-		$this->tab = 'administration';
-		$this->version = '1.0.0';
-		$this->author = 'Antonio Rossetti';
-		$this->need_instance = 0;
-		$this->bootstrap = true;
+class Autozip extends Module {
 
-		parent::__construct();
+    public function __construct() {
+        $this->name = 'autozip';
+        $this->tab = 'administration';
+        $this->version = '1.0.0';
+        $this->author = 'Antonio Rossetti';
+        $this->need_instance = 0;
+        $this->bootstrap = true;
 
-		$this->displayName = $this->l('Automatic Zip Update Mangement');
-		$this->description = $this->l('This module Allow you to automaticaly update your virtual Products from a private or public Git repository, according to your last version TAG');
+        parent::__construct();
 
-		$this->confirmUninstall = $this->l('Uninstalling the module will delete configured sources. Are you Sure ?');
+        $this->displayName = $this->l('Automatic Zip Update Mangement');
+        $this->description = $this->l('This module Allow you to automaticaly update your virtual Products from a private or public Git repository, according to your last version TAG');
 
-		$this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
-	}
+        $this->confirmUninstall = $this->l('Uninstalling the module will delete configured sources. Are you Sure ?');
 
-	public function install()
-	{
+        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+    }
 
-		// Database Table
-		include(dirname(__FILE__).'/sql/install.php');
+    public function install() {
 
-		// Module Tab
-		$tab = new Tab();
-		$tab->active = 1;
-		$tab->class_name = 'AdminManageAutoZip';
-		$tab->name = array();
-		foreach (Language::getLanguages(true) as $lang)
-			$tab->name[$lang['id_lang']] = 'AutoZip';
+        // Database Table
+        include(dirname(__FILE__).'/sql/install.php');
 
-		$tab->module = $this->name;
-		$tab->id_parent = (int)Tab::getIdFromClassName('AdminCatalog');
+        // Module Tab
+        $tab = new Tab();
+        $tab->active = 1;
+        $tab->class_name = 'AdminManageAutoZip';
+        $tab->name = array();
+        foreach (Language::getLanguages(true) as $lang)
+            $tab->name[$lang['id_lang']] = 'AutoZip';
 
-		return parent::install() &&	$tab->add();
-	}
+        $tab->module = $this->name;
+        $tab->id_parent = (int)Tab::getIdFromClassName('AdminCatalog');
 
-	public function uninstall()
-	{
+        return parent::install() && $tab->add();
+    }
 
-		// Database Table
-		include(dirname(__FILE__).'/sql/uninstall.php');
+    public function uninstall() {
 
-		// Module Tab
-		if ($id_tab = (int)Tab::getIdFromClassName('AdminManageAutoZip'))
-		{
-			$tab = new Tab($id_tab);
-			$tab->delete();
-		}
-		
-		return parent::uninstall();
-	}
+        // Database Table
+        include(dirname(__FILE__).'/sql/uninstall.php');
+
+        // Module Tab
+        if ($id_tab = (int)Tab::getIdFromClassName('AdminManageAutoZip')) {
+            $tab = new Tab($id_tab);
+            $tab->delete();
+        }
+
+        return parent::uninstall();
+    }
+
 }
