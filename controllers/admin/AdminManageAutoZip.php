@@ -168,7 +168,10 @@ class AdminManageAutoZipController extends ModuleAdminController {
                     'size' => 64,
                     'maxlength' => 255,
                     'required' => true,
-                    'desc' => $this->l('Base Url of the data source / repository')
+                    'desc' => $this->l('Base Url of the data source / repository. Example :').'<br/>'.
+                    $this->l('git@github.com:arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
+                    $this->l('https://github.com/arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
+                    $this->l('ftp://someserver.net/some/directory').'<br/>'
                 ),
                 array(
                     'type' => 'text',
@@ -187,20 +190,10 @@ class AdminManageAutoZipController extends ModuleAdminController {
                     'desc' => $this->l('Type of the data source / repository'),
                     'values' => array(
                         array(
-                            'id' => 'gitssh',
-                            'value' => 'gitssh',
-                            'label' => 'GIT (SSH)',
-                        ),
-                        array(
-                            'id' => 'githttp',
-                            'value' => 'githttp',
-                            'label' => 'GIT (HTTP)'
-                        ),
-                        array(
-                            'id' => 'githttps',
-                            'value' => 'githttps',
-                            'label' => 'GIT (HTTPS)<br/><i>'.
-                                $this->l('For all GIT sources, the script will be able to autodect & checkout the lastest TAG of the repository').'</i>'
+                            'id' => 'git',
+                            'value' => 'git',
+                            'label' => 'GIT (SSH / HTTPS)<br/><i>'.
+                                $this->l('The script will be able to autodect & checkout the lastest TAG of the repository').'</i>'
                         ),
                         array(
                             'id' => 'svnssh',
@@ -220,7 +213,10 @@ class AdminManageAutoZipController extends ModuleAdminController {
                         array(
                             'id' => 'ftp',
                             'value' => 'ftp',
-                            'label' => 'FTP'
+                            'label' => 'FTP<br/><i>'.
+                                $this->l('If your server is hosting thousand of files, you should specify your '
+                                    . 'subfolder in the "Source Url" AND in the "Source Folder", '
+                                    . 'to avoid downloading no necessary datas.').'</i>'
                         ),
                         array(
                             'id' => 'http',

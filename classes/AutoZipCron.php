@@ -39,7 +39,10 @@ class AutoZipCron {
      * @param array $env
      * @param string $cwd
      * @param string $stdin
-     * @return type
+     * @param string $stdout
+     * @param bool $throw_execption
+     * @return boolean
+     * @throws PrestaShopException
      */
     protected static function cliExec($cmd, $env = array(), $cwd = _AUTOZIP_TMP_, $stdin = null, &$stdout = null,
         $throw_execption = true) {
@@ -61,7 +64,7 @@ class AutoZipCron {
             throw new PrestaShopException('Unknown failure, maybe the php function "proc_open()" is not allowed');
 
         if ($stdin)
-            fwrite($pipes[0], $stdin);
+            fwrite($pipes[0], $stdin."\n");
         fclose($pipes[0]);
 
         $stdout = stream_get_contents($pipes[1]);
@@ -80,6 +83,7 @@ class AutoZipCron {
                     'Path        : '.$cwd."\n".
                     'Command     : '.$cmd."\n".
                     'Return code : '.(int)$return."\n".
+                    ($stdin ? 'Input       : **** hidden for security reason ****'."\n" : '').
                     ($stdout ? 'Output      : '.$stdout : '').
                     ($stderr ? 'Error       : '.$stderr : '').
                     '============================'."\n";
@@ -94,6 +98,12 @@ class AutoZipCron {
             return true;
     }
 
+    /**
+     * checkCommandAvailability
+     * 
+     * @param string $cmds
+     * @throws PrestaShopException
+     */
     protected static function checkCommandAvailability($cmds) {
 
         $miss = array();
@@ -109,6 +119,11 @@ class AutoZipCron {
         }
     }
 
+    /**
+     * checkCommonPrerequisities
+     * 
+     * @throws PrestaShopException
+     */
     public static function checkCommonPrerequisities() {
 
         self::checkCommandAvailability(array('rm', 'mv', 'zip'));
@@ -122,7 +137,13 @@ class AutoZipCron {
             '" must be accessible with write permission for the current user');
     }
 
-    public static function gitsshDownload(AutoZipConfig $autozip) {
+    /**
+     * gitDownload
+     * 
+     * @param AutoZipConfig $autozip
+     * @return string
+     */
+    public static function gitDownload(AutoZipConfig $autozip) {
 
         self::checkCommandAvailability(array('git', 'sort', 'tail', 'find', 'xargs'));
 
@@ -130,14 +151,19 @@ class AutoZipCron {
         self::cliExec('rm -rf '._AUTOZIP_TMP_.'* '._AUTOZIP_TMP_.'.[a-z]*');
 
         // Git Checkout
-        self::cliExec('git clone '.$autozip->source_url.' download', array('GIT_SSL_NO_VERIFY' => 'true'));
+        if ($autozip->source_login)
+            self::cliExec('git clone '.$autozip->source_url.' download ',
+                array('GIT_SSL_NO_VERIFY' => 'true', 'GIT_ASKPASS' => 'echo'), _AUTOZIP_TMP_,
+                $autozip->source_login."\n\r".$autozip->source_password);
+        else
+            self::cliExec('git clone '.$autozip->source_url.' download', array('GIT_SSL_NO_VERIFY' => 'true'));
 
         // get last TAG name
         $last_tag = null;
         self::cliExec('git tag -l | sort -bt. -k1,1n -k2,2n -k3,3n -k4,4n -k5,5n -k6,6n -k7,7n -k8,8n | tail -n 1',
             array('GIT_SSL_NO_VERIFY' => 'true'), _AUTOZIP_TMP_.'download', null, $last_tag);
 
-        // Switch to last TAG (if TAG exists, if not TAG detected, it will keep the master as source)
+        // Switch to last TAG (if TAG exists ;)
         if ($last_tag)
             self::cliExec('git checkout -q tags/'.trim($last_tag), array('GIT_SSL_NO_VERIFY' => 'true'),
                 _AUTOZIP_TMP_.'download');
@@ -152,6 +178,36 @@ class AutoZipCron {
         return trim($last_tag);
     }
 
+    /**
+     * ftpDownload
+     * 
+     * We use the stdin pipe to avaoid password to be displayed on system"s process list.
+     * 
+     * @param AutoZipConfig $autozip
+     * @return null
+     */
+    public static function ftpDownload(AutoZipConfig $autozip) {
+
+        self::checkCommandAvailability(array('wget', 'mkdir'));
+
+        //Clear temporary space
+        self::cliExec('rm -rf '._AUTOZIP_TMP_.'* '._AUTOZIP_TMP_.'.[a-z]*');
+
+        self::cliExec('mkdir -p '._AUTOZIP_TMP_.'download');
+        self::cliExec('wget -nH -r '.$autozip->source_url.' '.
+            ($autozip->source_login ? ' --user='.$autozip->source_login : '').' '.
+            ($autozip->source_password ? ' --ask-password' : ''), array(), _AUTOZIP_TMP_.'download',
+            $autozip->source_password);
+
+        return null;
+    }
+
+    /**
+     * generateZip
+     * 
+     * @param AutoZipConfig $autozip
+     * @param string $version_number
+     */
     public static function generateZip(AutoZipConfig $autozip, $version_number = null) {
 
         // Move the configured folder as source folder        
@@ -196,6 +252,12 @@ class AutoZipCron {
         }
     }
 
+    /**
+     * updateVersionNumber
+     * 
+     * @param AutoZipConfig $autozip
+     * @param type $version_number
+     */
     public static function updateVersionNumber(AutoZipConfig $autozip, $version_number) {
         //@TODO
     }

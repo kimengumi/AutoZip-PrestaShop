@@ -1,4 +1,4 @@
-<?php
+<pre><?php
 
 /**
  * NOTICE OF LICENSE
@@ -32,10 +32,10 @@ if (!defined('_PS_VERSION_'))
     exit;
 
 // Allow only running from CLI
-if (!Tools::isPHPCLI()) {
+/*if (!Tools::isPHPCLI()) {
     header('HTTP/1.0 403 Forbidden');
     die('This script is intended to be launched in command line only');
-}
+}*/
 
 // Load Config
 require_once(_PS_MODULE_DIR_.'autozip/classes/AutoZipConfig.php');
@@ -50,6 +50,6 @@ foreach (AutoZipConfig::getAllStatic() as $autozip) {
         if ($last_version)
             AutoZipCron::UpdateVersionNumber($autozip, $last_version);
     } catch (Exception $e) {
-        echo "\n".'Error processing autozip "'.$autozip->source_url.'" : '."\n".$e->getMessage();
+        echo "\n".'Error processing autozip "'.$autozip->zip_basename.' - '.$autozip->source_url.'" : '."\n".$e->getMessage();
     }
 }
