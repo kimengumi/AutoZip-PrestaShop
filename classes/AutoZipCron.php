@@ -150,13 +150,27 @@ class AutoZipCron {
         //Clear temporary space
         self::cliExec('rm -rf '._AUTOZIP_TMP_.'* '._AUTOZIP_TMP_.'.[a-z]*');
 
+        if (!$autozip->source_login && !$autozip->source_password)
+            $source_url = $autozip->source_url;
+
+        else {
+            $parts = parse_url($autozip->source_url);
+            $source_url = (isset($parts['scheme']) ? $parts['scheme'].'://' : '').
+                ($autozip->source_login ? $autozip->source_login :  //first we prefer use the dedicated field but
+                    (isset($parts['user']) ? $parts['user'] : '')). //if only contained in the url, we will use it
+                ($autozip->source_password ? ':'.$autozip->source_password : //idem login 
+                    (isset($parts['pass']) ? ':'.$parts['pass'] : '')). 
+                (($parts['user'] || $parts['pass']) ? '@' : '').
+                (isset($parts['host']) ? $parts['host'] : '').
+                (isset($parts['port']) ? ':'.$parts['port'] : '').
+                (isset($parts['path']) ? $parts['path'] : '').
+                (isset($parts['query']) ? '?'.$parts['query'] : '').
+                (isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
+        }
+
         // Git Checkout
-        if ($autozip->source_login)
-            self::cliExec('git clone '.$autozip->source_url.' download ',
-                array('GIT_SSL_NO_VERIFY' => 'true', 'GIT_ASKPASS' => 'echo'), _AUTOZIP_TMP_,
-                $autozip->source_login."\n\r".$autozip->source_password);
-        else
-            self::cliExec('git clone '.$autozip->source_url.' download', array('GIT_SSL_NO_VERIFY' => 'true'));
+        self::cliExec('git clone "'.$source_url.'" download ',
+            array('GIT_SSL_NO_VERIFY' => 'true', 'GIT_ASKPASS' => 'false'));
 
         // get last TAG name
         $last_tag = null;
