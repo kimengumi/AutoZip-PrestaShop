@@ -163,24 +163,23 @@ class AdminManageAutoZipController extends ModuleAdminController {
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Source Url :'),
-                    'name' => 'source_url',
+                    'label' => $this->l('Zip Basename :'),
+                    'name' => 'zip_basename',
                     'size' => 64,
-                    'maxlength' => 255,
+                    'maxlength' => 96,
                     'required' => true,
-                    'desc' => $this->l('Base Url of the data source / repository. Example :').'<br/>'.
-                    $this->l('git@github.com:arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
-                    $this->l('https://github.com/arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
-                    $this->l('ftp://someserver.net/some/directory').'<br/>'
+                    'desc' => $this->l('Basename used to generate the zip name.').' '.
+                    $this->l('If available, the lastest version number will be added at the end of the filename.').
+                    ' '.$this->l('Example : "myname" will give "myname-1.2.3.zip"')
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Source Folder :'),
-                    'name' => 'source_folder',
+                    'label' => $this->l('Zip Folder :'),
+                    'name' => 'zip_folder',
                     'size' => 64,
                     'maxlength' => 255,
                     'required' => false,
-                    'desc' => $this->l('Subfolder of the data source (relative to the base Url')
+                    'desc' => $this->l('Root folder name to have inside the zip (keep empty do disable root folder)')
                 ),
                 array(
                     'type' => 'radio',
@@ -192,43 +191,35 @@ class AdminManageAutoZipController extends ModuleAdminController {
                         array(
                             'id' => 'git',
                             'value' => 'git',
-                            'label' => 'GIT (SSH / HTTPS)<br/><i>'.
+                            'label' => 'GIT ( ssh / https )<br/><i>'.
                                 $this->l('The script will be able to autodect & checkout the lastest TAG of the repository').'</i>'
                         ),
                         array(
-                            'id' => 'svnssh',
-                            'value' => 'svnssh',
-                            'label' => 'SVN (SSH)'
+                            'id' => 'svn',
+                            'value' => 'svn',
+                            'label' => 'SVN ( http / https / ssh )'
                         ),
                         array(
-                            'id' => 'svnhttp',
-                            'value' => 'svnhttp',
-                            'label' => 'SVN (HTTP)'
-                        ),
-                        array(
-                            'id' => 'svnhttps',
-                            'value' => 'svnhttps',
-                            'label' => 'SVN (HTTPS)'
-                        ),
-                        array(
-                            'id' => 'ftp',
-                            'value' => 'ftp',
-                            'label' => 'FTP<br/><i>'.
+                            'id' => 'wget',
+                            'value' => 'wget',
+                            'label' => 'File Server ( ftp / http / https ) <br/><i>'.
                                 $this->l('If your server is hosting thousand of files, you should specify your '
                                     . 'subfolder in the "Source Url" AND in the "Source Folder", '
                                     . 'to avoid downloading no necessary datas.').'</i>'
                         ),
-                        array(
-                            'id' => 'http',
-                            'value' => 'http',
-                            'label' => 'HTTP'
-                        ),
-                        array(
-                            'id' => 'https',
-                            'value' => 'https',
-                            'label' => 'HTTPS'
-                        ),
                     )
+                ), 
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('Source Url :'),
+                    'name' => 'source_url',
+                    'size' => 64,
+                    'maxlength' => 255,
+                    'required' => true,
+                    'desc' => $this->l('Base Url of the data source / repository. Example :').'<br/>'.
+                    $this->l('git@github.com:arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
+                    $this->l('https://github.com/arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
+                    $this->l('ftp://someserver.net/some/directory').'<br/>'
                 ),
                 array(
                     'type' => 'text',
@@ -250,24 +241,14 @@ class AdminManageAutoZipController extends ModuleAdminController {
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Zip Basename :'),
-                    'name' => 'zip_basename',
-                    'size' => 64,
-                    'maxlength' => 96,
-                    'required' => false,
-                    'desc' => $this->l('Basename used to generate the zip name.').' '.
-                    $this->l('If available, the lastest version number will be added at the end of the filename.').
-                    ' '.$this->l('Example : "myname" will give "myname-1.2.3.zip"')
-                ),
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('Zip Folder :'),
-                    'name' => 'zip_folder',
+                    'label' => $this->l('Source Folder :'),
+                    'name' => 'source_folder',
                     'size' => 64,
                     'maxlength' => 255,
                     'required' => false,
-                    'desc' => $this->l('Root folder name to have inside the zip (keep empty do disable root folder)')
-                )
+                    'desc' => $this->l('Subfolder of the data source (relative to the base Url')
+                ),
+
             ),
             'submit' => array(
                 'title' => $this->l('Save'),
