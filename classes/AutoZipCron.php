@@ -154,13 +154,14 @@ class AutoZipCron {
             $source_url = $autozip->source_url;
 
         else {
+            // we cannot pass the credentials thru "stdin", we have to include it in the url
             $parts = parse_url($autozip->source_url);
             $source_url = (isset($parts['scheme']) ? $parts['scheme'].'://' : '').
-                ($autozip->source_login ? $autozip->source_login :  //first we prefer use the dedicated field but
-                    (isset($parts['user']) ? $parts['user'] : '')). //if only contained in the url, we will use it
+                ($autozip->source_login ? $autozip->source_login : //first we prefer use the dedicated field but
+                    (isset($parts['user']) ? $parts['user'] : '')).//if only contained in the url, we will use it
                 ($autozip->source_password ? ':'.$autozip->source_password : //idem login 
-                    (isset($parts['pass']) ? ':'.$parts['pass'] : '')). 
-                (($parts['user'] || $parts['pass']) ? '@' : '').
+                    (isset($parts['pass']) ? ':'.$parts['pass'] : '')).
+                (($autozip->source_login || $autozip->source_password) ? '@' : '').
                 (isset($parts['host']) ? $parts['host'] : '').
                 (isset($parts['port']) ? ':'.$parts['port'] : '').
                 (isset($parts['path']) ? $parts['path'] : '').
@@ -193,14 +194,38 @@ class AutoZipCron {
     }
 
     /**
-     * ftpDownload
+     * svnDownload
      * 
      * We use the stdin pipe to avaoid password to be displayed on system"s process list.
      * 
      * @param AutoZipConfig $autozip
      * @return null
      */
-    public static function ftpDownload(AutoZipConfig $autozip) {
+    public static function svnDownload(AutoZipConfig $autozip) {
+
+        self::checkCommandAvailability(array('svn'));
+
+        //Clear temporary space
+        self::cliExec('rm -rf '._AUTOZIP_TMP_.'* '._AUTOZIP_TMP_.'.[a-z]*');
+
+        self::cliExec('svn co "'.$autozip->source_url.'" download'.
+            (($autozip->source_login || $autozip->source_password) ? ' --no-auth-cache' : '').
+            ($autozip->source_login ? ' --username="'.$autozip->source_login.'"' : '').
+            ($autozip->source_password ? ' --force-interactive' : ''), array(), _AUTOZIP_TMP_.'download',
+            $autozip->source_password);
+
+        return null;
+    }
+
+    /**
+     * wgetDownload
+     * 
+     * We use the stdin pipe to avaoid password to be displayed on system"s process list.
+     * 
+     * @param AutoZipConfig $autozip
+     * @return null
+     */
+    public static function wgetDownload(AutoZipConfig $autozip) {
 
         self::checkCommandAvailability(array('wget', 'mkdir'));
 
