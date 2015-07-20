@@ -1,4 +1,4 @@
-<pre><?php
+<?php
 
 /**
  * NOTICE OF LICENSE
@@ -31,11 +31,14 @@ require(dirname(__FILE__).'/../../config/config.inc.php');
 if (!defined('_PS_VERSION_'))
     exit;
 
-// Allow only running from CLI
-/*if (!Tools::isPHPCLI()) {
-    header('HTTP/1.0 403 Forbidden');
-    die('This script is intended to be launched in command line only');
-}*/
+// Allow only running from CLI or with a token parameter
+if (!Tools::isPHPCLI()) {
+    if (Tools::getValue(Configuration::get('AUTOZIP_TOKEN_NAME')) !==
+        Configuration::get('AUTOZIP_TOKEN_KEY')) {
+        header('HTTP/1.0 403 Forbidden');
+        die('This script is intended to be launched in command line or with the right token'); ;
+    }
+}
 
 // Load Config
 require_once(_PS_MODULE_DIR_.'autozip/classes/AutoZipConfig.php');

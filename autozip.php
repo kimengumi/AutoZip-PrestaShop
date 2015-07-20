@@ -52,13 +52,18 @@ class Autozip extends Module {
         // Database Table
         include(dirname(__FILE__).'/sql/install.php');
 
+        // Token for "wget" style crons
+        Configuration::updateGlobalValue('AUTOZIP_TOKEN_NAME', Tools::passwdGen(10));
+        Configuration::updateGlobalValue('AUTOZIP_TOKEN_KEY', Tools::passwdGen(10));
+
         // Module Tab
         $tab = new Tab();
         $tab->active = 1;
         $tab->class_name = 'AdminManageAutoZip';
         $tab->name = array();
-        foreach (Language::getLanguages(true) as $lang)
+        foreach (Language::getLanguages(true) as $lang) {
             $tab->name[$lang['id_lang']] = 'AutoZip';
+        }
 
         $tab->module = $this->name;
         $tab->id_parent = (int)Tab::getIdFromClassName('AdminCatalog');

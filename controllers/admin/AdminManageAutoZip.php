@@ -31,7 +31,7 @@ class AdminManageAutoZipController extends ModuleAdminController {
         $this->table = 'autozip';
         $this->explicitSelect = true;
         $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'attachment` at ON a.id_attachment = at.id_attachment '.
-                'LEFT JOIN `'._DB_PREFIX_.'product_download` pd ON a.id_product_download = pd.id_product_download ';
+            'LEFT JOIN `'._DB_PREFIX_.'product_download` pd ON a.id_product_download = pd.id_product_download ';
         $this->_select = 'at.file_name AS attachment_name, pd.display_filename AS download_name ';
         $this->className = 'AutoZipConfig';
         $this->identifier = 'id_autozip';
@@ -85,6 +85,20 @@ class AdminManageAutoZipController extends ModuleAdminController {
         );
     }
 
+    public function renderList() {
+
+        $cron_url = Tools::getAdminUrl('modules/'.$this->module->name.'/cron.php?'.
+                Configuration::get('AUTOZIP_TOKEN_NAME').'='.Configuration::get('AUTOZIP_TOKEN_KEY'));
+
+
+        $this->informations[] = '<p><b>'.$this->l('Don\'t forget to schedule the cron job to update your zips').'</b></p>';
+        $this->informations[] = $this->l('Url for Webcron tools').' :<p>'.$cron_url.'</p>';
+        $this->informations[] = $this->l('Config line sample for command line / system cron').' :<p>'.
+            '16  3   *   *   *   php '._PS_MODULE_DIR_.$this->module->name.'/cron.php</p>';
+
+        return parent::renderList();
+    }
+
     public function postProcess() {
         if ($this->action) {
 
@@ -92,11 +106,11 @@ class AdminManageAutoZipController extends ModuleAdminController {
                 $this->errors[] = Tools::displayError('You do not have write access.');
 
             if (Tools::getIsset('id_attachment') && Tools::getIsset('id_product_download') &&
-                    (int)Tools::getValue('id_attachment') && (int)Tools::getValue('id_product_download'))
+                (int)Tools::getValue('id_attachment') && (int)Tools::getValue('id_product_download'))
                 $this->errors[] = Tools::displayError('You can not choose an attachment and a download at the same time.');
 
             if (Tools::getIsset('id_attachment') && Tools::getIsset('id_product_download') &&
-                    !(int)Tools::getValue('id_attachment') && !(int)Tools::getValue('id_product_download'))
+                !(int)Tools::getValue('id_attachment') && !(int)Tools::getValue('id_product_download'))
                 $this->errors[] = Tools::displayError('You have to choose an attachment OR a download.');
         }
         parent::postProcess();
@@ -104,16 +118,17 @@ class AdminManageAutoZipController extends ModuleAdminController {
 
     public function renderForm() {
 
-        $attachement_list = Db::getInstance()->ExecuteS('SELECT id_attachment, file_name '
-                .'FROM `'._DB_PREFIX_.'attachment` '
-                .(Tools::getIsset('add'.$this->table) ?
-                        'WHERE id_attachment NOT IN (SELECT id_attachment FROM `'._DB_PREFIX_.$this->table.'`)' : ''));
+        $attachement_list = Db::getInstance()->ExecuteS('
+
+        SELECT id_attachment,  file_name '
+            .'FROM `'._DB_PREFIX_.'attachment` '
+            .(Tools::getIsset('add'.$this->table) ?
+                'WHERE id_attachment NOT IN (SELECT id_attachment FROM `'._DB_PREFIX_.$this->table.'`)' : ''));
 
         $download_list = Db::getInstance()->ExecuteS('SELECT id_product_download, display_filename '
-                .'FROM `'._DB_PREFIX_.'product_download` '
-                .(Tools::getIsset('add'.$this->table) ?
-                        'WHERE id_product_download NOT IN (SELECT id_product_download FROM `'._DB_PREFIX_.$this->table.'`)'
-                            : ''));
+            .'FROM `'._DB_PREFIX_.'product_download` '
+            .(Tools::getIsset('add'.$this->table) ?
+                'WHERE id_product_download NOT IN (SELECT id_product_download FROM `'._DB_PREFIX_.$this->table.'`)' : ''));
 
         // No option available
         if (!count($attachement_list) && !count($download_list)) {
@@ -163,7 +178,7 @@ class AdminManageAutoZipController extends ModuleAdminController {
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Zip Basename :'),
+                    'label' => $this->l('Zip Basename : '),
                     'name' => 'zip_basename',
                     'size' => 64,
                     'maxlength' => 96,
@@ -174,7 +189,7 @@ class AdminManageAutoZipController extends ModuleAdminController {
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Zip Folder :'),
+                    'label' => $this->l('Zip Folder : '),
                     'name' => 'zip_folder',
                     'size' => 64,
                     'maxlength' => 255,
@@ -183,7 +198,7 @@ class AdminManageAutoZipController extends ModuleAdminController {
                 ),
                 array(
                     'type' => 'radio',
-                    'label' => $this->l('Source Type :'),
+                    'label' => $this->l('Source Type : '),
                     'name' => 'source_type',
                     'required' => true,
                     'desc' => $this->l('Type of the data source / repository'),
@@ -192,7 +207,7 @@ class AdminManageAutoZipController extends ModuleAdminController {
                             'id' => 'git',
                             'value' => 'git',
                             'label' => 'GIT ( ssh / https )<br/><i>'.
-                                $this->l('The script will be able to autodect & checkout the lastest TAG of the repository').'</i>'
+                            $this->l('The script will be able to autodect & checkout the lastest TAG of the repository').'</i>'
                         ),
                         array(
                             'id' => 'svn',
@@ -203,22 +218,22 @@ class AdminManageAutoZipController extends ModuleAdminController {
                             'id' => 'wget',
                             'value' => 'wget',
                             'label' => 'File Server ( ftp / http / https ) <br/><i>'.
-                                $this->l('If your server is hosting thousand of files, you should specify your '
-                                    . 'subfolder in the "Source Url" AND in the "Source Folder", '
-                                    . 'to avoid downloading no necessary datas.').'</i>'
+                            $this->l('If your server is hosting thousand of files, you should specify your '
+                                .'subfolder in the "Source Url" AND in the "Source Folder", '
+                                .'to avoid downloading no necessary datas.').'</i>'
                         ),
                     )
-                ), 
+                ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Source Url :'),
+                    'label' => $this->l('Source Url : '),
                     'name' => 'source_url',
                     'size' => 64,
                     'maxlength' => 255,
                     'required' => true,
-                    'desc' => $this->l('Base Url of the data source / repository. Example :').'<br/>'.
-                    $this->l('git@github.com:arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
-                    $this->l('https://github.com/arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
+                    'desc' => $this->l('Base Url of the data source / repository. Example : ').'<br/>'.
+                    $this->l('git@github.com: arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
+                    $this->l('https: //github.com/arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
                     $this->l('ftp://someserver.net/some/directory').'<br/>'
                 ),
                 array(
@@ -248,7 +263,6 @@ class AdminManageAutoZipController extends ModuleAdminController {
                     'required' => false,
                     'desc' => $this->l('Subfolder of the data source (relative to the base Url')
                 ),
-
             ),
             'submit' => array(
                 'title' => $this->l('Save'),
