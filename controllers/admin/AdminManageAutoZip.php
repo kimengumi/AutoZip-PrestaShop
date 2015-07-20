@@ -32,7 +32,7 @@ class AdminManageAutoZipController extends ModuleAdminController {
         $this->explicitSelect = true;
         $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'attachment` at ON a.id_attachment = at.id_attachment '.
             'LEFT JOIN `'._DB_PREFIX_.'product_download` pd ON a.id_product_download = pd.id_product_download ';
-        $this->_select = 'at.file_name AS attachment_name, pd.display_filename AS download_name ';
+        $this->_select = 'at.file_name AS attachment_name, pd.display_filename AS download_name, a.active as zip_active ';
         $this->className = 'AutoZipConfig';
         $this->identifier = 'id_autozip';
         $this->module = 'autozip';
@@ -55,32 +55,34 @@ class AdminManageAutoZipController extends ModuleAdminController {
             'id_autozip' => array(
                 'title' => '#',
                 'align' => 'center',
-                'width' => 25
             ),
             'attachment_name' => array(
                 'title' => $this->module->l('Attachment'),
                 'align' => 'center',
-                'width' => 25
             ),
             'download_name' => array(
                 'title' => $this->module->l('Product Download'),
                 'align' => 'center',
-                'width' => 25
             ),
             'source_url' => array(
                 'title' => $this->module->l('Source Url'),
                 'align' => 'left',
-                'width' => 25
             ),
             'source_folder' => array(
                 'title' => $this->module->l('Source Folder'),
                 'align' => 'left',
-                'width' => 25
             ),
             'source_type' => array(
                 'title' => $this->module->l('Source Type'),
                 'align' => 'left',
-                'width' => 25
+            ),
+            'zip_active' => array(
+                'title' => $this->module->l('Enabled'),
+                'align' => 'center',
+            ),
+            'last_zip_update' => array(
+                'title' => $this->module->l('Last Zip Date'),
+                'align' => 'center',
             )
         );
     }
@@ -261,7 +263,26 @@ class AdminManageAutoZipController extends ModuleAdminController {
                     'size' => 64,
                     'maxlength' => 255,
                     'required' => false,
-                    'desc' => $this->l('Subfolder of the data source (relative to the base Url')
+                    'desc' => $this->l('Subfolder of the data source (relative to the base Url)')
+                ),
+                array(
+                    'type' => 'switch',
+                    'label' => $this->l('Enabled :'),
+                    'name' => 'active',
+                    'required' => true,
+                    'desc' => $this->l('Enable or Disable the generation of this zip file'),
+                    'is_bool' => true,
+                    'values' => array(
+                        array(
+                            'id' => 'active_on',
+                            'value' => 1,
+                            'label' => $this->l('Enabled')),
+                        array(
+                            'id' => 'active_off',
+                            'value' => 0,
+                            'label' => $this->l('Disabled')
+                        )
+                    ),
                 ),
             ),
             'submit' => array(

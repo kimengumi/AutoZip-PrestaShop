@@ -38,6 +38,8 @@ class AutoZipConfig extends ObjectModel {
     public $source_password;
     public $zip_basename;
     public $zip_folder;
+    public $active;
+    public $last_zip_update;
     public static $definition = array(
         'table' => 'autozip',
         'primary' => 'id_autozip',
@@ -80,6 +82,14 @@ class AutoZipConfig extends ObjectModel {
             ),
             'zip_folder' => array(
                 'type' => ObjectModel :: TYPE_STRING,
+                'required' => false
+            ),
+            'active' => array(
+                'type' => ObjectModel :: TYPE_BOOL,
+                'required' => true
+            ),
+            'last_zip_update' => array(
+                'type' => ObjectModel :: TYPE_DATE,
                 'required' => false
             )
         )

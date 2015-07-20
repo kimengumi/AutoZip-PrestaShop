@@ -35,9 +35,11 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'autozip` (
   `source_password` varchar(128) DEFAULT NULL,
   `zip_folder` varchar(255) DEFAULT NULL,
   `zip_basename` varchar(96) DEFAULT NULL,
+  `active` TINYINT(1) DEFAULT NULL,
+  `last_zip_update` DATETIME DEFAULT NULL,
   PRIMARY KEY (`id_autozip`),
-  UNIQUE KEY `id_attachment` (`id_attachment`,`id_product_download`)
-) ENGINE='._MYSQL_ENGINE_.'  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2';
+  UNIQUE KEY `attachment_product_download` (`id_attachment`,`id_product_download`)
+) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8';
 
 foreach ($sql as $query)
     if (Db::getInstance()->execute($query) == false)
