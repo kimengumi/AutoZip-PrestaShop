@@ -52,6 +52,7 @@ foreach (AutoZipConfig::getAllStatic() as $autozip) {
         AutoZipCron::generateZip($autozip, $last_version);
         if ($last_version)
             AutoZipCron::UpdateVersionNumber($autozip, $last_version);
+        $autozip->updateZipDate();
     } catch (Exception $e) {
         echo "\n".'Error processing autozip "'.$autozip->zip_basename.' - '.$autozip->source_url.'" : '."\n".$e->getMessage();
     }

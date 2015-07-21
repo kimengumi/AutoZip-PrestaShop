@@ -145,6 +145,19 @@ class AutoZipConfig extends ObjectModel {
     }
 
     /**
+     * updateZipDate
+     * 
+     * Update the last_zip_update fields with current date
+     * 
+     * @return type
+     */
+    public function updateZipDate() {
+
+        $this->last_zip_update = date('Y-m-d H:i:s');
+        return $this->update();
+    }
+
+    /**
      * Adds current object to the database
      *
      * @param bool $auto_date
@@ -165,7 +178,9 @@ class AutoZipConfig extends ObjectModel {
 
     public static function getAllStatic() {
         $all = array();
-        $ids = Db::getInstance()->ExecuteS('SELECT id_autozip FROM `'._DB_PREFIX_.self::$definition['table'].'`');
+        $ids = Db::getInstance()->ExecuteS('SELECT id_autozip '
+            .'FROM `'._DB_PREFIX_.self::$definition['table'].'` '
+            .'WHERE active=1');
 
         foreach ($ids as $id) {
             $all[(int)$id['id_autozip']] = new self((int)$id['id_autozip']);
