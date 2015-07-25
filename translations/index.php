@@ -12,9 +12,9 @@
 *
 * DISCLAIMER
 *
-* Do not edit or add to this file if you wish to upgrade Antonio Rossetti to newer
-* versions in the future. If you wish to customize Antonio Rossetti for your
-* needs please refer to http://www.prestashop.com for more information.
+* Do not edit or add to this file if you wish to upgrade AutoZip to newer
+* versions in the future. If you wish to customize AutoZip for your
+* needs please refer to https://github.com/arossetti/Prestashop-Module-AutoZip for more information.
 *
 *  @author    Antonio Rossetti <arossetti@users.noreply.github.com>
 *  @copyright Antonio Rossetti
