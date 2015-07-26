@@ -1,5 +1,4 @@
-<?php
-/**
+{*
 * NOTICE OF LICENSE
 *
 * This source file is subject to the Academic Free License (AFL 3.0)
@@ -20,14 +19,24 @@
 *  @copyright Antonio Rossetti
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  
-*/
+*}
 
-header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
-
-header('Cache-Control: no-store, no-cache, must-revalidate');
-header('Cache-Control: post-check=0, pre-check=0', false);
-header('Pragma: no-cache');
-
-header('Location: ../');
-exit;
+{if $display_panel}
+    <div class="panel">
+        <h3>
+            <i class="icon icon-exclamation-sign"></i> {l s='Cron job scheduling' mod='autozip'}
+        </h3>
+    {/if}
+    <p>
+        <strong>{l s='Don\'t forget to schedule the cron job to update your zips' mod='autozip'}</strong>
+    </p><p>
+        <i>{l s='Url for Webcron tools' mod='autozip'}</i>
+    </p><p>
+        <a href="{$cron_url|escape:html:'UTF-8'}" target="blank">{$cron_url|escape:html:'UTF-8'}</a>
+    </p><p>
+        <i>{l s='Config line sample for command line / system cron' mod='autozip'}</i>
+    </p>
+    <pre>16  3   *   *   *   php {$cron_cli|escape:html:'UTF-8'}</pre>
+    {if $display_panel}
+    </div>
+{/if}

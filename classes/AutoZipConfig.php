@@ -9,7 +9,7 @@
  * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@prestashop.com so we can send you a copy immediately.
+ * to arossetti@users.noreply.github.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
@@ -176,6 +176,27 @@ class AutoZipConfig extends ObjectModel {
         return parent::add($autodate, $null_values);
     }
 
+    public function getRelatedProductsIds() {
+
+        if ($this->id_attachment) {
+            $sql_ids = 'SELECT DISTINCT pa.id_product '
+                .'FROM `'._DB_PREFIX_.$this->table.'` a, `'._DB_PREFIX_.'product_attachment` pa '
+                .'WHERE a.id_attachment = pa.id_attachment';
+        } else if ($this->id_product_download) {
+            $sql_ids = 'SELECT DISTINCT pd.id_product '
+                .'FROM `'._DB_PREFIX_.$this->table.'` a, `'._DB_PREFIX_.'product_download` pd '
+                .'WHERE a.id_product_download = pd.id_product_download';
+        } else
+            return array();
+
+        return Db::getInstance()->ExecuteS($sql_ids);
+    }
+
+    /**
+     * Get all actives configs
+     * 
+     * @return array self
+     */
     public static function getAllStatic() {
         $all = array();
         $ids = Db::getInstance()->ExecuteS('SELECT id_autozip '

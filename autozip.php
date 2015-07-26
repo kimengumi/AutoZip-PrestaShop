@@ -11,7 +11,7 @@
  * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@prestashop.com so we can send you a copy immediately.
+ * to arossetti@users.noreply.github.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
@@ -83,6 +83,85 @@ class Autozip extends Module {
         }
 
         return parent::uninstall();
+    }
+
+    /**
+     * Load the configuration form
+     */
+    public function getContent() {
+        /**
+         * If values have been submitted in the form, process.
+         */
+        if (((bool)Tools::isSubmit('submitAutozipModule')) == true)
+            $this->postProcess();
+
+        return $this->renderReminder().$this->renderForm();
+    }
+
+    /**
+     * Create the reminder to schedule the cron
+     */
+    public function renderReminder($display_panel = true) {
+
+        $this->context->smarty->assign('display_panel', (bool)$display_panel);
+        $this->context->smarty->assign('cron_cli', _PS_MODULE_DIR_.$this->name.'/cron.php');
+        $this->context->smarty->assign('cron_url',
+            Tools::getAdminUrl('modules/'.$this->name.'/cron.php?'.
+                Configuration::get('AUTOZIP_TOKEN_NAME').'='.Configuration::get('AUTOZIP_TOKEN_KEY')));
+        return $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
+    }
+
+    /**
+     * Create the form that will be displayed in the configuration of your module.
+     */
+    protected function renderForm() {
+
+        $features_list = Feature::getFeatures($this->context->language->id);
+        $features_list[] = array('id_feature' => 0, 'name' => $this->l('(None)'));
+
+        $form = array(
+            'legend' => array(
+                'title' => $this->l('Settings'),
+                'icon' => 'icon-cogs',
+            ),
+            'input' => array(
+                array(
+                    'type' => 'select',
+                    'label' => $this->l('Version Feature'),
+                    'name' => 'id_feature',
+                    'required' => true,
+                    'options' => array(
+                        'query' => $features_list,
+                        'id' => 'id_feature',
+                        'name' => 'name',
+                    ),
+                    'desc' => $this->l('When using a GIT repository as source, the script will be able to autodect & checkout the lastest TAG')
+                    .'<br/>'.$this->l('The name of the TAG will be stored as a custom Value of this Feature, allowing your customers to see the last version number')
+                ),
+            ),
+            'submit' => array(
+                'title' => $this->l('Save'),
+            ),
+        );
+
+        $helper = new HelperForm();
+        $helper->module = $this;
+        $helper->identifier = $this->identifier;
+        $helper->submit_action = 'submitAutozipModule';
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
+            .'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+        $helper->fields_value['id_feature'] = (int)Configuration::get('AUTOZIP_ID_FEATURE');
+
+        return $helper->generateForm(array(array('form' => $form)));
+    }
+
+    /**
+     * Save form data.
+     */
+    protected function postProcess() {
+
+        Configuration::updateGlobalValue('AUTOZIP_ID_FEATURE', (int)Tools::getValue('id_feature'));
     }
 
 }

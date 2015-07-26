@@ -9,7 +9,7 @@
  * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@prestashop.com so we can send you a copy immediately.
+ * to arossetti@users.noreply.github.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
@@ -54,49 +54,39 @@ class AdminManageAutoZipController extends ModuleAdminController {
         $this->fields_list = array(
             'id_autozip' => array(
                 'title' => '#',
-                'align' => 'center',
             ),
             'attachment_name' => array(
                 'title' => $this->module->l('Attachment'),
-                'align' => 'center',
             ),
             'download_name' => array(
                 'title' => $this->module->l('Product Download'),
-                'align' => 'center',
             ),
             'source_url' => array(
                 'title' => $this->module->l('Source Url'),
-                'align' => 'left',
             ),
             'source_folder' => array(
                 'title' => $this->module->l('Source Folder'),
-                'align' => 'left',
-            ),
-            'source_type' => array(
-                'title' => $this->module->l('Source Type'),
-                'align' => 'left',
-            ),
-            'zip_active' => array(
-                'title' => $this->module->l('Enabled'),
-                'align' => 'center',
             ),
             'last_zip_update' => array(
                 'title' => $this->module->l('Last Zip Date'),
-                'align' => 'center',
-            )
+                'type' => 'datetime',
+            ),
+            'zip_active' => array(
+                'title' => $this->module->l('Enabled'),
+                'active' => 'status',
+            ),
         );
     }
 
     public function renderList() {
 
-        $cron_url = Tools::getAdminUrl('modules/'.$this->module->name.'/cron.php?'.
-                Configuration::get('AUTOZIP_TOKEN_NAME').'='.Configuration::get('AUTOZIP_TOKEN_KEY'));
-
-
-        $this->informations[] = '<p><b>'.$this->l('Don\'t forget to schedule the cron job to update your zips').'</b></p>';
-        $this->informations[] = $this->l('Url for Webcron tools').' :<p>'.$cron_url.'</p>';
-        $this->informations[] = $this->l('Config line sample for command line / system cron').' :<p>'.
-            '16  3   *   *   *   php '._PS_MODULE_DIR_.$this->module->name.'/cron.php</p>';
+        // if no cron execution within the last weekn we display the reminder as a warning
+        if (!(int)Db::getInstance()->getValue('SELECT COUNT(id_autozip) '
+                .'FROM `'._DB_PREFIX_.$this->table.'` '
+                .'WHERE DATE(last_zip_update) >= DATE_SUB(NOW(),INTERVAL 1 WEEK)')) {
+            $this->warnings[] = $this->l('No cron execution detected within the last week').
+                $this->module->renderReminder(false);
+        }
 
         return parent::renderList();
     }

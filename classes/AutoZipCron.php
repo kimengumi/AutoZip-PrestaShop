@@ -9,7 +9,7 @@
  * http://opensource.org/licenses/afl-3.0.php
  * If you did not receive a copy of the license and are unable to
  * obtain it through the world-wide-web, please send an email
- * to license@prestashop.com so we can send you a copy immediately.
+ * to arossetti@users.noreply.github.com so we can send you a copy immediately.
  *
  * DISCLAIMER
  *
@@ -298,7 +298,50 @@ class AutoZipCron {
      * @param type $version_number
      */
     public static function updateVersionNumber(AutoZipConfig $autozip, $version_number) {
-        //@TODO
+
+        if (!$id_feature = (int)Configuration::get('AUTOZIP_ID_FEATURE'))
+            return;
+
+        $id_products = $autozip->getRelatedProductsIds();
+
+        $id_langs = Language::getLanguages(false, false, true);
+
+        foreach ($id_products as $id_product) {
+
+            //Check if value already ecists
+            $id_feature_value = Db::getInstance()->getValue('SELECT DISTINCT fv.id_feature_value '
+                .'FROM '._DB_PREFIX_.'feature_value fv, '._DB_PREFIX_.'feature_value_lang fvl '
+                .'WHERE fv.id_feature_value = fvl.id_feature_value '
+                .'AND fv.id_feature='.(int)$id_feature.' '
+                .'AND fvl.value="'.$version_number.'" '
+                .'AND fv.custom=1');
+
+            // if not create
+            if (!$id_feature_value) {
+                $row = array(
+                    'id_feature' => (int)$id_lang,
+                    'custom' => true);
+                Db::getInstance()->insert('feature_value', $row);
+                $id_feature_value = Db::getInstance()->Insert_ID();
+
+                foreach ($id_langs as $id_lang) {
+                    $row = array(
+                        'id_feature_value' => (int)$id_feature_value,
+                        'id_lang' => (int)$id_lang,
+                        'value' => pSQL($version_number));
+                    Db::getInstance()->insert('feature_value_lang', $row);
+                }
+            }
+
+            // Completly recreate the link between the product & feature/value to keep unicity
+            Db::getInstance()->delete('feature_product',
+                'id_feature='.(int)$id_feature.' AND id_product='.(int)$id_product);
+            $row = array(
+                'id_feature' => (int)$id_feature,
+                'id_product' => (int)$id_product,
+                'id_feature_value' => (int)$id_feature_value);
+            Db::getInstance()->insert('feature_product', $row, false, false, Db::REPLACE);
+        }
     }
 
 }
