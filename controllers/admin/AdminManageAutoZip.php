@@ -27,12 +27,15 @@ require_once _PS_MODULE_DIR_.'autozip/classes/AutoZipConfig.php';
 class AdminManageAutoZipController extends ModuleAdminController {
 
     public function __construct() {
+
+        $this->context = Context::getContext();
         $this->bootstrap = true;
         $this->table = 'autozip';
         $this->explicitSelect = true;
-        $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'attachment` at ON a.id_attachment = at.id_attachment '.
-            'LEFT JOIN `'._DB_PREFIX_.'product_download` pd ON a.id_product_download = pd.id_product_download ';
-        $this->_select = 'at.file_name AS attachment_name, pd.display_filename AS download_name, a.active as zip_active ';
+        $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'attachment_lang` atl ON a.id_attachment = atl.id_attachment AND atl.id_lang = '.(int)$this->context->language->id.' '.
+            'LEFT JOIN `'._DB_PREFIX_.'product_download` pd ON a.id_product_download = pd.id_product_download '.
+            'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON pl.id_product = pd.id_product AND pl.id_lang = '.(int)$this->context->language->id;
+        $this->_select = 'a.active as zip_active, IF (a.id_product_download,pl.name,atl.name) AS name';
         $this->className = 'AutoZipConfig';
         $this->identifier = 'id_autozip';
         $this->module = 'autozip';
@@ -48,18 +51,15 @@ class AdminManageAutoZipController extends ModuleAdminController {
             )
         );
 
-        $this->context = Context::getContext();
         parent :: __construct();
 
         $this->fields_list = array(
             'id_autozip' => array(
                 'title' => '#',
             ),
-            'attachment_name' => array(
-                'title' => $this->module->l('Attachment'),
-            ),
-            'download_name' => array(
-                'title' => $this->module->l('Product Download'),
+            'name' => array(
+                'title' => $this->module->l('Attachment or Virtual product'),
+                'search' => false
             ),
             'source_url' => array(
                 'title' => $this->module->l('Source Url'),
@@ -74,6 +74,7 @@ class AdminManageAutoZipController extends ModuleAdminController {
             'zip_active' => array(
                 'title' => $this->module->l('Enabled'),
                 'active' => 'status',
+                'search' => false
             ),
         );
     }
@@ -110,17 +111,23 @@ class AdminManageAutoZipController extends ModuleAdminController {
 
     public function renderForm() {
 
-        $attachement_list = Db::getInstance()->ExecuteS('
-
-        SELECT id_attachment,  file_name '
-            .'FROM `'._DB_PREFIX_.'attachment` '
+        $attachement_list = Db::getInstance()->ExecuteS(
+            'SELECT a.id_attachment,CONCAT(a.id_attachment," - ",atl.name) AS name '
+            .'FROM `'._DB_PREFIX_.'attachment` a '
+            .'LEFT JOIN `'._DB_PREFIX_.'attachment_lang` atl ON '
+            .'atl.id_attachment = a.id_attachment AND atl.id_lang = '.(int)$this->context->language->id.' '
             .(Tools::getIsset('add'.$this->table) ?
-                'WHERE id_attachment NOT IN (SELECT id_attachment FROM `'._DB_PREFIX_.$this->table.'`)' : ''));
+                'WHERE a.id_attachment NOT IN (SELECT id_attachment FROM `'._DB_PREFIX_.$this->table.'`) ' : ' ')
+            .'ORDER BY atl.name');
 
-        $download_list = Db::getInstance()->ExecuteS('SELECT id_product_download, display_filename '
-            .'FROM `'._DB_PREFIX_.'product_download` '
+        $download_list = Db::getInstance()->ExecuteS(
+            'SELECT pd.id_product_download,CONCAT(pd.id_product_download," - ",pl.name) AS name   '
+            .'FROM `'._DB_PREFIX_.'product_download` pd '
+            .'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON '
+            .'pl.id_product = pd.id_product AND pl.id_lang = '.(int)$this->context->language->id.' '
             .(Tools::getIsset('add'.$this->table) ?
-                'WHERE id_product_download NOT IN (SELECT id_product_download FROM `'._DB_PREFIX_.$this->table.'`)' : ''));
+                'WHERE pd.id_product_download NOT IN (SELECT id_product_download FROM `'._DB_PREFIX_.$this->table.'`) ' : ' ')
+            .'ORDER BY pl.name');
 
         // No option available
         if (!count($attachement_list) && !count($download_list)) {
@@ -135,8 +142,8 @@ class AdminManageAutoZipController extends ModuleAdminController {
         }
 
         // "None" option on both list
-        $attachement_list[] = array('id_attachment' => 0, 'file_name' => $this->l('(None)'));
-        $download_list[] = array('id_product_download' => 0, 'display_filename' => $this->l('(None)'));
+        $attachement_list[] = array('id_attachment' => 0, 'name' => $this->l('(None)'));
+        $download_list[] = array('id_product_download' => 0, 'name' => $this->l('(None)'));
         $this->informations[] = Tools::displayError('You have to choose an attachment OR a download.');
 
         $this->fields_form = array(
@@ -146,133 +153,137 @@ class AdminManageAutoZipController extends ModuleAdminController {
             'input' => array(
                 array(
                     'type' => 'select',
-                    'label' => $this->l('Product Attachment'),
+                    'label' => $this->l('Attachment'),
                     'name' => 'id_attachment',
                     'required' => true,
                     'options' => array(
                         'query' => $attachement_list,
                         'id' => 'id_attachment',
-                        'name' => 'file_name',
+                        'name' => 'name',
                     ),
-                    'desc' => $this->l('Payable attachment of the virtual product')
+                    'desc' => $this->l('To make the attachment available in the list you first have to create the attachment with the Name, description, and a dummy zip file in "Catalog > Attachments" or in a product edit page, tab "Attachments"')
                 ),
                 array(
                     'type' => 'select',
-                    'label' => $this->l('Product Download'),
+                    'label' => $this->l('Virtual product'),
                     'name' => 'id_product_download',
                     'required' => true,
                     'options' => array(
                         'query' => $download_list,
                         'id' => 'id_product_download',
-                        'name' => 'display_filename',
+                        'name' => 'name',
                     ),
-                    'desc' => $this->l('Free Download of the virtual product')
+                    'desc' => $this->l('To make the virtual product available in the list you first have to create the entry with the name, download rules, and a dummy zip file in the product edit page, tab "Virtual product"')
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Zip Basename : '),
+                    'label' => $this->l('Zip base name'),
                     'name' => 'zip_basename',
                     'size' => 64,
                     'maxlength' => 96,
                     'required' => true,
-                    'desc' => $this->l('Basename used to generate the zip name.').' '.
-                    $this->l('If available, the lastest version number will be added at the end of the filename.').
+                    'desc' => $this->l('Base name used to generate the name of the zip file.').' '.
+                    $this->l('If available (GIt source having Tags), the latest version number will be added at the end of the filename.').
                     ' '.$this->l('Example : "myname" will give "myname-1.2.3.zip"')
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Zip Folder : '),
+                    'label' => $this->l('Zip Folder'),
                     'name' => 'zip_folder',
                     'size' => 64,
                     'maxlength' => 255,
                     'required' => false,
-                    'desc' => $this->l('Root folder name to have inside the zip (keep empty do disable root folder)')
+                    'desc' => $this->l('Root folder name inside the zip (keep empty to disable root folder).')
                 ),
                 array(
                     'type' => 'radio',
-                    'label' => $this->l('Source Type : '),
+                    'label' => $this->l('Source type'),
                     'name' => 'source_type',
                     'required' => true,
-                    'desc' => $this->l('Type of the data source / repository'),
+                    'desc' => null,
                     'values' => array(
                         array(
                             'id' => 'git',
                             'value' => 'git',
-                            'label' => 'GIT ( ssh / https )<br/><i>'.
-                            $this->l('The script will be able to autodect & checkout the lastest TAG of the repository').'</i>'
+                            'label' => 'GIT (ssh / https)<p class="help-block">'.
+                            $this->l('The script will be able to auto detect & use the latest TAG.').'<br/>'.
+                            $this->l('The Tag name should be exclusively composed of numbers and dots (eg. "1.2.3.4").').'</p>'
                         ),
                         array(
                             'id' => 'svn',
                             'value' => 'svn',
-                            'label' => 'SVN ( http / https / ssh )'
+                            'label' => 'SVN (http / https / ssh)'
                         ),
                         array(
                             'id' => 'wget',
                             'value' => 'wget',
-                            'label' => 'File Server ( ftp / http / https ) <br/><i>'.
-                            $this->l('If your server is hosting thousand of files, you should specify your '
-                                .'subfolder in the "Source Url" AND in the "Source Folder", '
-                                .'to avoid downloading no necessary datas.').'</i>'
+                            'label' => $this->l('File server ').' (ftp / http / https) <p class="help-block">'.
+                            $this->l('If your server is hosting thousand of files, you should specify your subfolder in the "Source Url" AND in the "Source Folder", to avoid downloading unnecessary datas.').'</p>'
                         ),
                     )
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Source Url : '),
+                    'label' => $this->l('Source Url'),
                     'name' => 'source_url',
                     'size' => 64,
                     'maxlength' => 255,
                     'required' => true,
-                    'desc' => $this->l('Base Url of the data source / repository. Example : ').'<br/>'.
-                    $this->l('git@github.com: arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
-                    $this->l('https: //github.com/arossetti/Prestashop-Module-AutoZip.git').'<br/>'.
-                    $this->l('ftp://someserver.net/some/directory').'<br/>'
+                    'desc' => $this->l('Example :').'<br/>'.
+                    'git@github.com:arossetti/Prestashop-Module-AutoZip.git<br/>'.
+                    'https://github.com/arossetti/Prestashop-Module-AutoZip.git<br/>'.
+                    'https://svn.someserver.net/somerepo/branches/publish<br/>'.
+                    'ftp://ftp.someserver.net/some/directory<br/>'
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Source Login :'),
+                    'label' => $this->l('Source Login'),
                     'name' => 'source_login',
                     'size' => 32,
                     'maxlength' => 128,
                     'required' => false,
-                    'desc' => $this->l('Login to connect to the source')
+                    'desc' => $this->l('Optional.').' '.
+                    $this->l('The script will be able to use the credential keys of the account running the cron job (eg. SSH keys for GIt or SVN).')
                 ),
                 array(
                     'type' => 'password',
-                    'label' => $this->l('Source Password :'),
+                    'label' => $this->l('Source Password'),
                     'name' => 'source_password',
                     'size' => 32,
                     'maxlength' => 128,
                     'required' => false,
-                    'desc' => $this->l('Password to connect to the source')
+                    'desc' => $this->l('Optional.').' '.
+                    $this->l('The script will be able to use the credential keys of the account running the cron job (eg. SSH keys for GIt or SVN).')
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Source Folder :'),
+                    'label' => $this->l('Source Folder'),
                     'name' => 'source_folder',
                     'size' => 64,
                     'maxlength' => 255,
                     'required' => false,
-                    'desc' => $this->l('Subfolder of the data source (relative to the base Url)')
-                ),
-                array(
-                    'type' => 'switch',
-                    'label' => $this->l('Enabled :'),
-                    'name' => 'active',
-                    'required' => true,
-                    'desc' => $this->l('Enable or Disable the generation of this zip file'),
-                    'is_bool' => true,
-                    'values' => array(
-                        array(
-                            'id' => 'active_on',
-                            'value' => 1,
-                            'label' => $this->l('Enabled')),
-                        array(
-                            'id' => 'active_off',
-                            'value' => 0,
-                            'label' => $this->l('Disabled')
-                        )
-                    ),
+                    'desc' => $this->l('Subfolder in the source to use as base dir :').'<br/>'.
+                    $this->l('Relative path for GIT & SVN sources').'<br/>'.
+                    $this->l('Absolute path for File Server sources')
+                )
+            ),
+            array(
+                'type' => 'switch',
+                'label' => $this->l('Enabled :'),
+                'name' => 'active',
+                'required' => true,
+                'desc' => $this->l('Enable or Disable the generation of this zip file'),
+                'is_bool' => true,
+                'values' => array(
+                    array(
+                        'id' => 'active_on',
+                        'value' => 1,
+                        'label' => $this->l('Enabled')),
+                    array(
+                        'id' => 'active_off',
+                        'value' => 0,
+                        'label' => $this->l('Disabled')
+                    )
                 ),
             ),
             'submit' => array(

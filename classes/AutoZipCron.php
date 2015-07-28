@@ -35,6 +35,9 @@ class AutoZipCron {
     /**
      * cliExec
      * 
+     * Wrapper to launch command line software. Manage STDOUT & alow virtual STDIN input 
+     * Synchronise the output debug level on Prestashop's debug mode.
+     * 
      * @param string $cmd
      * @param array $env
      * @param string $cwd
@@ -203,7 +206,7 @@ class AutoZipCron {
      */
     public static function svnDownload(AutoZipConfig $autozip) {
 
-        self::checkCommandAvailability(array('svn'));
+        self::checkCommandAvailability(array('svn', 'find', 'xargs'));
 
         //Clear temporary space
         self::cliExec('rm -rf '._AUTOZIP_TMP_.'* '._AUTOZIP_TMP_.'.[a-z]*');
@@ -213,6 +216,9 @@ class AutoZipCron {
             ($autozip->source_login ? ' --username="'.$autozip->source_login.'"' : '').
             ($autozip->source_password ? ' --force-interactive' : ''), array(), _AUTOZIP_TMP_.'download',
             $autozip->source_password);
+
+        // Clean all svn files.
+        self::cliExec('find '._AUTOZIP_TMP_.'download -name ".svn" -print | xargs /bin/rm -rf');
 
         return null;
     }
@@ -308,7 +314,7 @@ class AutoZipCron {
 
         foreach ($id_products as $id_product) {
 
-            //Check if value already ecists
+            //Check if value already exists
             $id_feature_value = Db::getInstance()->getValue('SELECT DISTINCT fv.id_feature_value '
                 .'FROM '._DB_PREFIX_.'feature_value fv, '._DB_PREFIX_.'feature_value_lang fvl '
                 .'WHERE fv.id_feature_value = fvl.id_feature_value '
@@ -324,6 +330,7 @@ class AutoZipCron {
                 Db::getInstance()->insert('feature_value', $row);
                 $id_feature_value = Db::getInstance()->Insert_ID();
 
+                // The version number will be stored in any language available
                 foreach ($id_langs as $id_lang) {
                     $row = array(
                         'id_feature_value' => (int)$id_feature_value,
@@ -333,7 +340,7 @@ class AutoZipCron {
                 }
             }
 
-            // Completly recreate the link between the product & feature/value to keep unicity
+            // Completly recreate the link between the product & feature/value, in any case, to keep unicity
             Db::getInstance()->delete('feature_product',
                 'id_feature='.(int)$id_feature.' AND id_product='.(int)$id_product);
             $row = array(

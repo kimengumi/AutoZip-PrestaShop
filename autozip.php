@@ -39,8 +39,8 @@ class Autozip extends Module {
 
         parent::__construct();
 
-        $this->displayName = $this->l('Automatic Zip Update Mangement');
-        $this->description = $this->l('This module Allow you to automaticaly update your virtual Products from a private or public Git repository, according to your last version TAG');
+        $this->displayName = $this->l('Management of automatic zip files update');
+        $this->description = $this->l('This module Allow you to automatically update your products downloads or attachments from an external source');
 
         $this->confirmUninstall = $this->l('Uninstalling the module will delete configured sources. Are you Sure ?');
 
@@ -135,8 +135,8 @@ class Autozip extends Module {
                         'id' => 'id_feature',
                         'name' => 'name',
                     ),
-                    'desc' => $this->l('When using a GIT repository as source, the script will be able to autodect & checkout the lastest TAG')
-                    .'<br/>'.$this->l('The name of the TAG will be stored as a custom Value of this Feature, allowing your customers to see the last version number')
+                    'desc' => $this->l('When using a GIT repository as source, the script will be able to auto detect & use the latest TAG')
+                    .'<br/>'.$this->l('The TAG name will be stored as a custom value of this feature, allowing your customers to see the published current version number')
                 ),
             ),
             'submit' => array(

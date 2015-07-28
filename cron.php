@@ -48,7 +48,8 @@ AutoZipCron::checkCommonPrerequisities();
 
 foreach (AutoZipConfig::getAllStatic() as $autozip) {
     try {
-        $last_version = AutoZipCron::{$autozip->source_type.'Download'}($autozip);
+        $download_function_name = $autozip->source_type.'Download';
+        $last_version = AutoZipCron::$download_function_name($autozip);
         AutoZipCron::generateZip($autozip, $last_version);
         if ($last_version)
             AutoZipCron::UpdateVersionNumber($autozip, $last_version);
