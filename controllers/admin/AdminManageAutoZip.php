@@ -38,11 +38,12 @@ class AdminManageAutoZipController extends ModuleAdminController {
         $this->_select = 'a.active as zip_active, IF (a.id_product_download,pl.name,atl.name) AS name';
         $this->className = 'AutoZipConfig';
         $this->identifier = 'id_autozip';
-        $this->module = 'autozip';
         $this->lang = false;
         $this->requiredDatabase = true;
         $this->addRowAction('edit');
         $this->addRowAction('delete');
+
+        parent :: __construct();
         $this->bulk_actions = array(
             'delete' => array(
                 'text' => $this->l('Delete selected'),
@@ -50,29 +51,26 @@ class AdminManageAutoZipController extends ModuleAdminController {
                 'icon' => 'icon-trash'
             )
         );
-
-        parent :: __construct();
-
         $this->fields_list = array(
             'id_autozip' => array(
                 'title' => '#',
             ),
             'name' => array(
-                'title' => $this->module->l('Attachment or Virtual product'),
+                'title' => $this->l('Attachment or Virtual product'),
                 'search' => false
             ),
             'source_url' => array(
-                'title' => $this->module->l('Source Url'),
+                'title' => $this->l('Source Url'),
             ),
             'source_folder' => array(
-                'title' => $this->module->l('Source Folder'),
+                'title' => $this->l('Source Folder'),
             ),
             'last_zip_update' => array(
-                'title' => $this->module->l('Last Zip Date'),
+                'title' => $this->l('Last Zip Date'),
                 'type' => 'datetime',
             ),
             'zip_active' => array(
-                'title' => $this->module->l('Enabled'),
+                'title' => $this->l('Enabled'),
                 'active' => 'status',
                 'search' => false
             ),

@@ -37,6 +37,12 @@
         <i>{l s='Config line sample for command line / system cron' mod='autozip'}</i>
     </p>
     <pre>16  3   *   *   *   php {$cron_cli|escape:html:'UTF-8'}</pre>
+    <p>
+        {l s='As the cron will launch systems softwares,' mod='autozip'} 
+        <strong>{l s='it is highly recommended to schedule the cron job via a system crontab.' mod='autozip'}</strong><br/>
+        {l s='The script will be able to use the credential keys of the account running the cron job (eg. SSH keys for GIt or SVN).' mod='autozip'}
+
+    </p>
     {if $display_panel}
     </div>
 {/if}

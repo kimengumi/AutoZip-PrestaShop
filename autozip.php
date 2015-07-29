@@ -39,8 +39,8 @@ class Autozip extends Module {
 
         parent::__construct();
 
-        $this->displayName = $this->l('Management of automatic zip files update');
-        $this->description = $this->l('This module Allow you to automatically update your products downloads or attachments from an external source');
+        $this->displayName = $this->l('Automatic zip files update management');
+        $this->description = $this->l('This module allow you to automatically update your virtual products or your attachments from an external source');
 
         $this->confirmUninstall = $this->l('Uninstalling the module will delete configured sources. Are you Sure ?');
 
