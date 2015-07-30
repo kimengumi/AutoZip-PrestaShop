@@ -24,7 +24,7 @@
  */
 require_once _PS_MODULE_DIR_.'autozip/classes/AutoZipConfig.php';
 
-class AdminManageAutoZipController extends ModuleAdminController {
+class AdminAutozipController extends ModuleAdminController {
 
     public function __construct() {
 
@@ -263,26 +263,27 @@ class AdminManageAutoZipController extends ModuleAdminController {
                     'desc' => $this->l('Subfolder in the source to use as base dir :').'<br/>'.
                     $this->l('Relative path for GIT & SVN sources').'<br/>'.
                     $this->l('Absolute path for File Server sources')
-                )
-            ),
-            array(
-                'type' => 'switch',
-                'label' => $this->l('Enabled :'),
-                'name' => 'active',
-                'required' => true,
-                'desc' => $this->l('Enable or Disable the generation of this zip file'),
-                'is_bool' => true,
-                'values' => array(
-                    array(
-                        'id' => 'active_on',
-                        'value' => 1,
-                        'label' => $this->l('Enabled')),
-                    array(
-                        'id' => 'active_off',
-                        'value' => 0,
-                        'label' => $this->l('Disabled')
-                    )
                 ),
+                array(
+                    'type' => 'switch',
+                    'label' => $this->l('Enabled :'),
+                    'title' => $this->l('Enabled :'),
+                    'name' => 'active',
+                    'required' => true,
+                    'desc' => $this->l('Enable or Disable the generation of this zip file'),
+                    'is_bool' => true,
+                    'values' => array(
+                        array(
+                            'id' => 'active_on',
+                            'value' => 1,
+                            'label' => $this->l('Enabled')),
+                        array(
+                            'id' => 'active_off',
+                            'value' => 0,
+                            'label' => $this->l('Disabled')
+                        )
+                    )
+                )
             ),
             'submit' => array(
                 'title' => $this->l('Save'),

@@ -129,7 +129,7 @@ class AutoZipCron {
      */
     public static function checkCommonPrerequisities() {
 
-        self::checkCommandAvailability(array('rm', 'mv', 'zip'));
+        self::checkCommandAvailability(array('cp','rm', 'mv', 'zip'));
 
         if (!is_writable(_AUTOZIP_TMP_))
             throw new PrestaShopException('The directory "'._AUTOZIP_TMP_.
@@ -152,6 +152,7 @@ class AutoZipCron {
 
         //Clear temporary space
         self::cliExec('rm -rf '._AUTOZIP_TMP_.'* '._AUTOZIP_TMP_.'.[a-z]*');
+        self::cliExec('cp '._AUTOZIP_TMP_.'../index.php .');
 
         if (!$autozip->source_login && !$autozip->source_password)
             $source_url = $autozip->source_url;
@@ -210,6 +211,7 @@ class AutoZipCron {
 
         //Clear temporary space
         self::cliExec('rm -rf '._AUTOZIP_TMP_.'* '._AUTOZIP_TMP_.'.[a-z]*');
+        self::cliExec('cp '._AUTOZIP_TMP_.'../index.php .');
 
         self::cliExec('svn co "'.$autozip->source_url.'" download'.
             (($autozip->source_login || $autozip->source_password) ? ' --no-auth-cache' : '').
@@ -237,6 +239,7 @@ class AutoZipCron {
 
         //Clear temporary space
         self::cliExec('rm -rf '._AUTOZIP_TMP_.'* '._AUTOZIP_TMP_.'.[a-z]*');
+        self::cliExec('cp '._AUTOZIP_TMP_.'../index.php .');
 
         self::cliExec('mkdir -p '._AUTOZIP_TMP_.'download');
         self::cliExec('wget -nH -r '.$autozip->source_url.' '.

@@ -59,7 +59,7 @@ class Autozip extends Module {
         // Module Tab
         $tab = new Tab();
         $tab->active = 1;
-        $tab->class_name = 'AdminManageAutoZip';
+        $tab->class_name = 'AdminAutozip';
         $tab->name = array();
         foreach (Language::getLanguages(true) as $lang) {
             $tab->name[$lang['id_lang']] = 'AutoZip';
@@ -77,7 +77,7 @@ class Autozip extends Module {
         include(dirname(__FILE__).'/sql/uninstall.php');
 
         // Module Tab
-        if ($id_tab = (int)Tab::getIdFromClassName('AdminManageAutoZip')) {
+        if ($id_tab = (int)Tab::getIdFromClassName('AdminAutozip')) {
             $tab = new Tab($id_tab);
             $tab->delete();
         }
