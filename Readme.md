@@ -64,5 +64,5 @@ That's it: you have contributed to this open-source project! Congratulations!
 [1]: http://doc.prestashop.com/display/PS16/Coding+Standards
 [2]: http://doc.prestashop.com/display/PS16/How+to+write+a+commit+message
 [3]: https://help.github.com/articles/using-pull-requests
-[4]: https://www.prestashop.com/forums/topic/178140-creating-free-virtual-products-with-direct-download/
+[4]: https://www.prestashop.com/en/how-to-sell-digital-products-online
 [5]: https://www.squirrelhosting.co.uk/hosting-blog/hosting-blog-info.php?id=75#16
