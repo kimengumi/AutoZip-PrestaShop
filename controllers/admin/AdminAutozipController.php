@@ -119,7 +119,7 @@ class AdminAutozipController extends ModuleAdminController {
             .'ORDER BY atl.name');
 
         $download_list = Db::getInstance()->ExecuteS(
-            'SELECT pd.id_product_download,CONCAT(pd.id_product_download," - ",pl.name) AS name   '
+            'SELECT pd.id_product_download,CONCAT(pl.id_product," - ",pl.name) AS name   '
             .'FROM `'._DB_PREFIX_.'product_download` pd '
             .'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON '
             .'pl.id_product = pd.id_product AND pl.id_lang = '.(int)$this->context->language->id.' '
