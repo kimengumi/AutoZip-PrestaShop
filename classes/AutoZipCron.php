@@ -129,7 +129,7 @@ class AutoZipCron {
      */
     public static function checkCommonPrerequisities() {
 
-        self::checkCommandAvailability(array('cp','rm', 'mv', 'zip'));
+        self::checkCommandAvailability(array('cp', 'rm', 'mv', 'zip'));
 
         if (!is_writable(_AUTOZIP_TMP_))
             throw new PrestaShopException('The directory "'._AUTOZIP_TMP_.
@@ -274,8 +274,12 @@ class AutoZipCron {
 
         if ($autozip->id_attachment) {
 
-            // Move the generated zip as the "regular" Attachement
+            // get the Attachement config
             $attachment = new Attachment($autozip->id_attachment);
+            if (!$attachment->file)
+                throw new PrestaShopException('The Attachement does not exists. Please update the autozip association');
+
+            // Move the generated zip as the "regular" Attachement
             self::cliExec('mv autozip.zip '._PS_DOWNLOAD_DIR_.$attachment->file);
 
             if ($autozip->zip_basename)
@@ -284,8 +288,12 @@ class AutoZipCron {
             $attachment->update();
         }else if ($autozip->id_product_download) {
 
-            // Move the generated zip as the "regular" Product Download
+            // get the Product Download config
             $product_download = new ProductDownload($autozip->id_product_download);
+            if (!$product_download->id_product)
+                throw new PrestaShopException('The product Download does not exists. Please update the autozip association');
+
+            // Move the generated zip as the "regular" Product Download
             self::cliExec('mv autozip.zip '._PS_DOWNLOAD_DIR_.$product_download->filename);
 
             if ($autozip->zip_basename)

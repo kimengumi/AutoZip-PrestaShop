@@ -35,7 +35,7 @@ class AdminAutozipController extends ModuleAdminController {
         $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'attachment_lang` atl ON a.id_attachment = atl.id_attachment AND atl.id_lang = '.(int)$this->context->language->id.' '.
             'LEFT JOIN `'._DB_PREFIX_.'product_download` pd ON a.id_product_download = pd.id_product_download '.
             'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON pl.id_product = pd.id_product AND pl.id_lang = '.(int)$this->context->language->id;
-        $this->_select = 'a.active as zip_active, IF (a.id_product_download,pl.name,atl.name) AS name';
+        $this->_select = 'a.active as zip_active, IF (a.id_product_download,pl.name,atl.name) AS name ';
         $this->className = 'AutoZipConfig';
         $this->identifier = 'id_autozip';
         $this->lang = false;
@@ -52,7 +52,7 @@ class AdminAutozipController extends ModuleAdminController {
             )
         );
         $this->fields_list = array(
-            'id_autozip' => array(
+            $this->identifier => array(
                 'title' => '#',
             ),
             'name' => array(
@@ -80,12 +80,23 @@ class AdminAutozipController extends ModuleAdminController {
     public function renderList() {
 
         // if no cron execution within the last weekn we display the reminder as a warning
-        if (!(int)Db::getInstance()->getValue('SELECT COUNT(id_autozip) '
+        if (!(int)Db::getInstance()->getValue('SELECT COUNT('.$this->identifier.') '
                 .'FROM `'._DB_PREFIX_.$this->table.'` '
                 .'WHERE DATE(last_zip_update) >= DATE_SUB(NOW(),INTERVAL 1 WEEK)')) {
             $this->warnings[] = $this->l('No cron execution detected within the last week').
                 $this->module->renderReminder(false);
         }
+
+
+        // if some product dowloads links are out of date
+        $missing_links = Db::getInstance()->executeS('SELECT a.'.$this->identifier.', a.zip_basename '
+            .'FROM `'._DB_PREFIX_.$this->table.'` a '
+            .$this->_join
+            .' WHERE ! pd.id_product_download IS NULL '
+            .' AND ! atl.id_attachment IS NULL ');
+        foreach ($missing_links as $ml)
+                $this->errors[] = $this->l('Attachment or Virtual product does not exit for Autozip').
+                ' '.$ml[$this->identifier].' - '.$ml['zip_basename'];
 
         return parent::renderList();
     }
