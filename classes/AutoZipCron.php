@@ -328,7 +328,7 @@ class AutoZipCron {
             // if not create
             if (!$id_feature_value) {
                 $row = array(
-                    'id_feature' => (int)$id_lang,
+                    'id_feature' => (int)$id_feature,
                     'custom' => true);
                 Db::getInstance()->insert('feature_value', $row);
                 $id_feature_value = Db::getInstance()->Insert_ID();
