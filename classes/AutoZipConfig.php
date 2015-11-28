@@ -180,12 +180,12 @@ class AutoZipConfig extends ObjectModel {
 
         if ($this->id_attachment) {
             $sql_ids = 'SELECT DISTINCT pa.id_product '
-                .'FROM `'._DB_PREFIX_.$this->table.'` a, `'._DB_PREFIX_.'product_attachment` pa '
-                .'WHERE a.id_attachment = pa.id_attachment';
+                .'FROM `'._DB_PREFIX_.'product_attachment` pa '
+                .'WHERE pa.id_attachment = '.(int)$this->id_attachment;
         } else if ($this->id_product_download) {
             $sql_ids = 'SELECT DISTINCT pd.id_product '
-                .'FROM `'._DB_PREFIX_.$this->table.'` a, `'._DB_PREFIX_.'product_download` pd '
-                .'WHERE a.id_product_download = pd.id_product_download';
+                .'FROM `'._DB_PREFIX_.'product_download` pd '
+                .'WHERE pd.id_product_download = '.(int)$this->id_product_download;
         } else
             return array();
 

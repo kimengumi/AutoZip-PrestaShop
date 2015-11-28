@@ -353,10 +353,10 @@ class AutoZipCron {
 
             // Completly recreate the link between the product & feature/value, in any case, to keep unicity
             Db::getInstance()->delete('feature_product',
-                'id_feature='.(int)$id_feature.' AND id_product='.(int)$id_product);
+                'id_feature='.(int)$id_feature.' AND id_product='.(int)$id_product['id_product']);
             $row = array(
                 'id_feature' => (int)$id_feature,
-                'id_product' => (int)$id_product,
+                'id_product' => (int)$id_product['id_product'],
                 'id_feature_value' => (int)$id_feature_value);
             Db::getInstance()->insert('feature_product', $row, false, false, Db::REPLACE);
         }
